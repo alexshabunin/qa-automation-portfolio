@@ -25,7 +25,7 @@ class TestSaveFailure:
         assert board.drawer.root().is_visible(), "drawer closed on failed save"
         # server message surfaced
         msg = board.drawer.drawer_error_text()
-        assert "down" in msg.lower() or "error" in msg.lower()
+        assert "Database is down" in msg
         # title preserved
         title_value = board.page.locator(board.drawer.TITLE_INPUT).input_value()
         assert title_value == "Important item I do not want to retype"

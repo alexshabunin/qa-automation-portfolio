@@ -113,7 +113,7 @@ def mock_create_task_failure(page: Page, status: int = 500, message: str = "Serv
         route.fulfill(
             status=status,
             content_type="application/json",
-            body=json.dumps({"error": message}),
+            body=json.dumps({"message": message}),
         )
 
     page.route("**/*", handler)
