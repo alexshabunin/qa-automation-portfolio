@@ -153,7 +153,8 @@ jobs:
           # but the landing actually points to ../img — we serve the landing
           # from /, so we need img/* at /img/* AND the html at /. Fix the
           # relative paths in the html to use img/ instead of ../img/.
-          sed -i 's|../img/|img/|g' site/index.html
+          # escape the dots so sed doesn't eat "docs/img/" too
+          sed -i 's|\.\./img/|img/|g' site/index.html
           # allure report
           mkdir -p site/report
           cp -r allure-report/* site/report/
