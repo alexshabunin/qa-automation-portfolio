@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="docs/img/banner.png" alt="qa-automation-portfolio — one SPA, two UI architectures, REST API suite" />
-
-<br/>
+# qa-automation-portfolio
 
 **One application. Two UI test architectures. A REST API suite on top. Same Allure dashboard.**
 
@@ -151,9 +149,32 @@ silently fires the request is the worst kind of false-pass.
 
 ## 🗺 architecture
 
-<div align="center">
-<img src="docs/img/diagram-architecture.svg" alt="Repo architecture — SUT, test suites, CI, reporting" />
-</div>
+```mermaid
+flowchart LR
+    subgraph SUT
+        SPA["app/<br/>TaskFlow SPA<br/>(HTML + CSS + 1 JS file)"]
+        BE["backend/<br/>FastAPI + JWT<br/>(in-memory store)"]
+    end
+
+    subgraph "test suites"
+        UIP["ui-pytest/<br/>pytest + Playwright + POM<br/>mocks via page.route()"]
+        UIV["ui-vedro/<br/>vedro + d42 + Webbricks-style POM<br/>typed MockedRoute"]
+        API["api/<br/>requests + ApiManager facade<br/>real HTTP, real JWT"]
+    end
+
+    subgraph "ci / reporting"
+        CI["GitHub Actions<br/>matrix job (api · ui-pytest · ui-vedro)"]
+        AL["Allure on<br/>GitHub Pages"]
+    end
+
+    UIP -->|http.server -d ../app| SPA
+    UIV -->|http.server -d ../app| SPA
+    API -->|HTTP /v1/*| BE
+    UIP --> CI
+    UIV --> CI
+    API --> CI
+    CI -->|combined results| AL
+```
 
 ---
 
@@ -260,9 +281,15 @@ Both are correct; one fits a 10-test side project, the other fits a
 
 ## 🔌 api/ fixture chain
 
-<div align="center">
-<img src="docs/img/diagram-fixture-chain.svg" alt="API fixture chain — http_session → auth_token → auth_session → api_manager → clean_tasks" />
-</div>
+```mermaid
+flowchart TB
+    A["http_session<br/><i>scope=session</i><br/>requests.Session(), default headers"]
+    B["auth_token<br/><i>scope=session</i><br/>POST /v1/auth/login → JWT (once per run)"]
+    C["auth_session<br/><i>scope=session</i><br/>http_session + Authorization: Bearer ..."]
+    D["api_manager<br/><i>scope=class</i><br/>ApiManager(auth_session) — facade over AuthAPI, TasksAPI"]
+    E["clean_tasks<br/><i>scope=function</i><br/>DELETE /v1/tasks before each test that asks"]
+    A --> B --> C --> D --> E
+```
 
 `auth_token` is `scope="session"` because POST /login is ~200 ms — 100
 tests at function-scope would burn 20 sec doing nothing useful.
