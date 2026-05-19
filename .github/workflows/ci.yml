@@ -141,10 +141,27 @@ jobs:
       - name: Generate Allure report
         run: allure generate allure-results --clean -o allure-report
 
+      - name: Assemble pages site (landing at /, allure at /report/)
+        run: |
+          mkdir -p site
+          cp -r docs/landing/* site/
+          # the landing references ../img/*.gif — bring those next to it
+          mkdir -p site/img
+          cp -r docs/img/* site/img/ 2>/dev/null || true
+          # also expose ../img path the landing uses
+          ln -s img site/landing-img 2>/dev/null || true
+          # but the landing actually points to ../img — we serve the landing
+          # from /, so we need img/* at /img/* AND the html at /. Fix the
+          # relative paths in the html to use img/ instead of ../img/.
+          sed -i 's|../img/|img/|g' site/index.html
+          # allure report
+          mkdir -p site/report
+          cp -r allure-report/* site/report/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: allure-report
+          path: site
 
       - name: Deploy to Pages
         id: deployment

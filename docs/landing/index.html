@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>qa-automation-portfolio — Alex Shabunin</title>
+<meta name="description" content="Test automation portfolio — one SPA, two UI architectures (pytest+POM and vedro+d42), plus REST API tests via ApiManager.">
+<meta property="og:title" content="qa-automation-portfolio">
+<meta property="og:description" content="One SPA. Two UI architectures. + REST API suite.">
+<meta property="og:image" content="https://raw.githubusercontent.com/nightmarovvv/qa-automation-portfolio/main/docs/img/social-preview.png">
+<meta property="og:url" content="https://nightmarovvv.github.io/qa-automation-portfolio/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'Neue Montreal Variable';
+  src: url('https://assets.website-files.com/5f69856bad1199253301ca0a/6223e8b06cc398c754ab714a_PPNeueMontreal-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neue Montreal';
+  src: url('https://assets.website-files.com/5f69856bad1199253301ca0a/6223e8b065ddb43c53578e4d_PPNeueMontreal-Book.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+</style>
+
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 16px; overflow-x: hidden; scroll-behavior: smooth; }
+body {
+  font-family: 'Neue Montreal Variable','Neue Montreal',-apple-system,sans-serif;
+  background: #030303; color: #f7f7f7;
+  overflow-x: hidden;
+  opacity: 0; transition: opacity .5s ease;
+  font-variation-settings: "wght" 380;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body.loaded { opacity: 1; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ============== top bar ============== */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 3vh 5vw;
+  mix-blend-mode: difference;
+}
+.logo {
+  font-size: .95rem; letter-spacing: .12em; text-transform: uppercase;
+  font-variation-settings: "wght" 500;
+}
+.logo a:hover { text-decoration: underline; text-underline-offset: 6px; }
+.top-link {
+  font-size: .95rem; letter-spacing: .08em; text-transform: uppercase;
+  font-variation-settings: "wght" 350;
+  opacity: .7; transition: font-variation-settings .4s, opacity .3s;
+}
+.top-link:hover { font-variation-settings: "wght" 600; opacity: 1; }
+
+/* ============== hero ============== */
+.hero {
+  min-height: 100vh; padding: 14vh 5vw 8vh;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+.hero-caption {
+  font-size: .85rem; letter-spacing: .25em; text-transform: uppercase;
+  color: #e8e2da; opacity: .55; margin-bottom: 2.5rem;
+  font-variation-settings: "wght" 400;
+}
+.hero h1 {
+  font-size: clamp(3rem, 9.5vw, 9rem);
+  line-height: .96; letter-spacing: -.03em;
+  font-variation-settings: "wght" 500;
+  margin-bottom: 2rem;
+}
+.hero h1 .accent { color: #e8e2da; }
+.hero-sub {
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+  max-width: 60ch; color: rgba(247,247,247,.6);
+  font-weight: 300; line-height: 1.55;
+  margin-bottom: 4rem;
+}
+.cta-row { display: flex; flex-wrap: wrap; gap: 1.2rem; }
+.cta {
+  display: inline-flex; align-items: center; gap: .8rem;
+  padding: 1.1rem 2rem;
+  border: 1px solid #e8e2da;
+  border-radius: 100px;
+  font-size: 1rem; letter-spacing: .04em;
+  font-variation-settings: "wght" 500;
+  transition: background .3s, color .3s, transform .3s;
+}
+.cta:hover { background: #e8e2da; color: #030303; transform: translateY(-2px); }
+.cta.secondary { border-color: rgba(247,247,247,.3); color: rgba(247,247,247,.7); }
+.cta.secondary:hover { background: rgba(247,247,247,.05); color: #f7f7f7; border-color: #f7f7f7; }
+.cta .arrow { display: inline-block; transition: transform .3s; }
+.cta:hover .arrow { transform: translateX(4px); }
+
+.scroll-hint {
+  position: absolute; bottom: 4vh; left: 50%; transform: translateX(-50%);
+  font-size: .8rem; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(247,247,247,.4);
+  animation: drift 2s ease-in-out infinite;
+}
+@keyframes drift {
+  0%,100% { transform: translate(-50%, 0); opacity: .4; }
+  50%     { transform: translate(-50%, 6px); opacity: .7; }
+}
+
+/* ============== section ============== */
+section { padding: 12vh 5vw; position: relative; }
+.section-num {
+  font-size: .8rem; letter-spacing: .25em; text-transform: uppercase;
+  color: rgba(232,226,218,.4); margin-bottom: 1.4rem;
+}
+.section-title {
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  letter-spacing: -.02em; line-height: 1;
+  font-variation-settings: "wght" 500;
+  margin-bottom: 4rem;
+  max-width: 18ch;
+}
+
+/* ============== stats grid ============== */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  border-top: 1px solid rgba(232,226,218,.15);
+  border-bottom: 1px solid rgba(232,226,218,.15);
+}
+.stat {
+  padding: 4rem 2.5rem;
+  border-right: 1px solid rgba(232,226,218,.15);
+}
+.stat:last-child { border-right: none; }
+.stat-num {
+  font-size: clamp(2.5rem, 4.5vw, 4rem);
+  letter-spacing: -.04em; line-height: 1;
+  font-variation-settings: "wght" 500;
+  margin-bottom: .8rem;
+  color: #e8e2da;
+}
+.stat-label {
+  font-size: .85rem; letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(247,247,247,.55);
+  font-variation-settings: "wght" 400;
+}
+
+/* ============== three-up ============== */
+.three-up {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;
+}
+.stack-card {
+  padding: 3rem 2.5rem;
+  border: 1px solid rgba(232,226,218,.18);
+  transition: border-color .4s, transform .4s;
+}
+.stack-card:hover { border-color: #e8e2da; transform: translateY(-4px); }
+.stack-card .badge {
+  display: inline-block;
+  font-size: .75rem; letter-spacing: .2em; text-transform: uppercase;
+  padding: .3rem .7rem; border: 1px solid rgba(232,226,218,.4);
+  color: #e8e2da; margin-bottom: 2rem;
+}
+.stack-card h3 {
+  font-size: 1.7rem; letter-spacing: -.01em; line-height: 1.15;
+  font-variation-settings: "wght" 500;
+  margin-bottom: 1.2rem;
+}
+.stack-card p {
+  font-size: 1rem; color: rgba(247,247,247,.6); line-height: 1.6;
+  margin-bottom: 1.6rem;
+}
+.stack-card .meta {
+  display: flex; justify-content: space-between;
+  font-size: .85rem; letter-spacing: .05em;
+  color: rgba(232,226,218,.6);
+  padding-top: 1.4rem; border-top: 1px solid rgba(232,226,218,.12);
+}
+
+/* ============== demo block ============== */
+.demo-block {
+  border: 1px solid rgba(232,226,218,.18);
+  padding: 2.5rem;
+  text-align: center;
+}
+.demo-block img { width: 100%; max-width: 1100px; margin: 0 auto; }
+.demo-caption {
+  margin-top: 1.8rem; font-size: .9rem; letter-spacing: .05em;
+  color: rgba(247,247,247,.5);
+}
+.demo-caption code {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: .85em; padding: .1em .4em; border-radius: 3px;
+  background: rgba(232,226,218,.08); color: #e8e2da;
+}
+
+/* ============== quote ============== */
+.quote-block {
+  text-align: left;
+  padding: 18vh 5vw;
+  border-top: 1px solid rgba(232,226,218,.15);
+  border-bottom: 1px solid rgba(232,226,218,.15);
+}
+.quote-block .q {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.05; letter-spacing: -.02em;
+  max-width: 22ch;
+  margin-bottom: 2.5rem;
+}
+.quote-block .q .em { color: #e8e2da; font-style: italic; }
+.quote-block .who {
+  font-size: .85rem; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(247,247,247,.5);
+}
+
+/* ============== cta panel ============== */
+.cta-panel {
+  text-align: center;
+  padding: 18vh 5vw;
+}
+.cta-panel h2 {
+  font-size: clamp(2.4rem, 5.5vw, 4.5rem);
+  letter-spacing: -.02em; line-height: 1.05;
+  margin-bottom: 3rem;
+  font-variation-settings: "wght" 500;
+}
+.cta-panel .cta-row { justify-content: center; }
+
+/* ============== footer ============== */
+footer {
+  padding: 5vh 5vw 4vh;
+  border-top: 1px solid rgba(232,226,218,.12);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .85rem; letter-spacing: .05em;
+  color: rgba(247,247,247,.5);
+}
+footer a { color: inherit; transition: color .3s; }
+footer a:hover { color: #e8e2da; }
+footer .links { display: flex; gap: 2rem; }
+
+/* ============== reveal animation ============== */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* ============== responsive ============== */
+@media (max-width: 900px) {
+  .three-up { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(2) { border-right: none; }
+  .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid rgba(232,226,218,.15); }
+  footer { flex-direction: column; gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><a href="https://alexshabunin.com">Alex Shabunin</a></div>
+  <a class="top-link" href="https://github.com/nightmarovvv/qa-automation-portfolio">Repository ↗</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-caption reveal">QA AUTOMATION · PORTFOLIO · 2026</div>
+  <h1 class="reveal">
+    Tests that fail<br/>
+    <span class="accent">loudly,</span> on purpose.
+  </h1>
+  <p class="hero-sub reveal">
+    One SPA tested two different ways — a classic pytest + Page Object Model
+    suite for the 80%, and a vedro + d42 + Webbricks-style suite for the deep
+    end. Plus a REST API suite running against a real FastAPI service. Same
+    Allure dashboard.
+  </p>
+  <div class="cta-row reveal">
+    <a class="cta" href="./report/">
+      View live Allure report <span class="arrow">→</span>
+    </a>
+    <a class="cta secondary" href="https://github.com/nightmarovvv/qa-automation-portfolio">
+      Open repository <span class="arrow">→</span>
+    </a>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- STATS -->
+<section style="padding-top:0;padding-bottom:0;">
+  <div class="stats">
+    <div class="stat reveal">
+      <div class="stat-num">43</div>
+      <div class="stat-label">tests &nbsp;·&nbsp; passing</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">~17s</div>
+      <div class="stat-label">full CI matrix</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">0</div>
+      <div class="stat-label">flakes</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num">3</div>
+      <div class="stat-label">test architectures</div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE STACKS -->
+<section>
+  <div class="section-num reveal">01 / Architectures</div>
+  <h2 class="section-title reveal">Three stacks. One application. Honest tradeoffs.</h2>
+  <div class="three-up">
+    <div class="stack-card reveal">
+      <span class="badge">Track A</span>
+      <h3>pytest + Playwright + POM</h3>
+      <p>Classic Page Object Model with function-scope fixtures, per-test
+      <code>page.route()</code> helpers, and dict literals for fake data. The
+      stack 80% of teams already speak.</p>
+      <div class="meta"><span>11 tests</span><span>~12s</span></div>
+    </div>
+    <div class="stack-card reveal">
+      <span class="badge">Track B</span>
+      <h3>vedro + d42 + Webbricks</h3>
+      <p>BDD-style steps, state-guaranteed contexts, typed
+      <code>MockedRoute</code> with strict count checks, d42 schemas with
+      source-cited bounds. Earns its weight at 1000+ tests.</p>
+      <div class="meta"><span>7 scenarios</span><span>~5s</span></div>
+    </div>
+    <div class="stack-card reveal">
+      <span class="badge">API</span>
+      <h3>requests + ApiManager</h3>
+      <p>Facade over per-domain API clients, session/class/function fixture
+      scopes, real JWT against a real FastAPI service. Every request becomes
+      an Allure step with body attached.</p>
+      <div class="meta"><span>25 tests</span><span>~3s</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section>
+  <div class="section-num reveal">02 / In motion</div>
+  <h2 class="section-title reveal">A test driving the SPA.</h2>
+  <div class="demo-block reveal">
+    <img src="../img/demo-create-task.gif" alt="Test creating a task end-to-end" />
+    <div class="demo-caption">
+      Open drawer · fill form · pick status + tags · save · card lands ·
+      toast. Same flow asserted across <code>ui-pytest</code> and
+      <code>ui-vedro</code>.
+    </div>
+  </div>
+</section>
+
+<!-- DEBOUNCE DEMO -->
+<section>
+  <div class="section-num reveal">03 / Real assertions</div>
+  <h2 class="section-title reveal">The badge counts every request. It says <span style="color:#e8e2da">×1</span>.</h2>
+  <div class="demo-block reveal">
+    <img src="../img/demo-search-debounce.gif" alt="Search debounce — 5 keystrokes, 1 request" />
+    <div class="demo-caption">
+      The SPA's <code>loadTasks</code> is wrapped in a 300 ms debounce. Five
+      keystrokes in 200 ms — the counter goes <code>×0 → ×1</code>. Anything
+      else fails the test with the exact URLs the mock saw.
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-block">
+  <p class="q reveal">
+    If it runs <span class="em">manually,</span><br/>
+    it won't for long.
+  </p>
+  <div class="who reveal">— working principle</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-panel">
+  <h2 class="reveal">See the live report.</h2>
+  <div class="cta-row reveal">
+    <a class="cta" href="./report/">
+      Open Allure report <span class="arrow">→</span>
+    </a>
+    <a class="cta secondary" href="https://github.com/nightmarovvv/qa-automation-portfolio">
+      Read the code <span class="arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 Alex Shabunin · MIT</div>
+  <div class="links">
+    <a href="https://alexshabunin.com">alexshabunin.com</a>
+    <a href="https://github.com/nightmarovvv">GitHub</a>
+    <a href="https://t.me/shanaleks">Telegram</a>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('load', () => {
+  document.body.classList.add('loaded');
+});
+
+// reveal on scroll
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (e.isIntersecting) {
+      e.target.classList.add('is-in');
+      io.unobserve(e.target);
+    }
+  }
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 6) * 50 + 'ms';
+  io.observe(el);
+});
+</script>
+</body>
+</html>
