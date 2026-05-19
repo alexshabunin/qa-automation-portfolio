@@ -15,13 +15,13 @@ class TestTasksFilters:
 
     @allure.title("Empty store returns total=0")
     def test_empty(self, api_manager):
-        body = api_manager.tasks.list().json()
+        body = api_manager.tasks.get_list().json()
         assert body == {"data": [], "total": 0}
 
     @allure.title("q= filters title substring (case insensitive)")
     def test_q_filter(self, api_manager):
         self._seed(api_manager)
-        body = api_manager.tasks.list(q="alpha").json()
+        body = api_manager.tasks.get_list(q="alpha").json()
         titles = {t["title"] for t in body["data"]}
         assert titles == {"Alpha launch retrospective", "Alpha follow up"}
         assert body["total"] == 2
@@ -29,21 +29,21 @@ class TestTasksFilters:
     @allure.title("status= filters by status")
     def test_status_filter(self, api_manager):
         self._seed(api_manager)
-        body = api_manager.tasks.list(status="in_progress").json()
+        body = api_manager.tasks.get_list(status="in_progress").json()
         assert [t["title"] for t in body["data"]] == ["Beta plan"]
 
     @allure.title("tag= filters by tag membership")
     def test_tag_filter(self, api_manager):
         self._seed(api_manager)
-        body = api_manager.tasks.list(tag="bug").json()
+        body = api_manager.tasks.get_list(tag="bug").json()
         titles = {t["title"] for t in body["data"]}
         assert titles == {"Gamma release", "Alpha follow up"}
 
     @allure.title("limit/offset paginates while total stays constant")
     def test_pagination(self, api_manager):
         self._seed(api_manager)
-        page1 = api_manager.tasks.list(limit=2, offset=0).json()
-        page2 = api_manager.tasks.list(limit=2, offset=2).json()
+        page1 = api_manager.tasks.get_list(limit=2, offset=0).json()
+        page2 = api_manager.tasks.get_list(limit=2, offset=2).json()
         assert page1["total"] == 4
         assert page2["total"] == 4
         assert len(page1["data"]) == 2

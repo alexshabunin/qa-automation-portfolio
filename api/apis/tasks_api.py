@@ -8,7 +8,7 @@ from custom_requester import CustomRequester
 class TasksAPI(CustomRequester):
     BASE = "/v1/tasks"
 
-    def list(
+    def get_list(
         self,
         *,
         q: Optional[str] = None,

@@ -53,4 +53,4 @@ class TestTasksValidation:
     @allure.title("GET tasks?status=archived -> 400")
     @pytest.mark.negative
     def test_list_bad_status_filter(self, api_manager):
-        api_manager.tasks.list(status="archived", expected_status=400)
+        api_manager.tasks.get_list(status="archived", expected_status=400)
