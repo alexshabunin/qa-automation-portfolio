@@ -21,7 +21,9 @@ class TestSearch:
         mock.requests.clear()
 
         board.search("alpha", delay_ms=30)
-        board.task_list.wait_for_card(matching["id"])
+        # debounce is 300ms; wait long enough for it to fire (and any
+        # would-be extra calls to also have fired by now)
+        board.page.wait_for_timeout(600)
 
         assert len(mock.requests) == 1, (
             f"debounce should coalesce 5 keystrokes into 1 GET, "
