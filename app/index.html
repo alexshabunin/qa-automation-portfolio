@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="app-header" data-test="app-header">
+    <a class="brand" data-test="brand" href="#/">TaskFlow</a>
+    <div class="header-actions">
+      <input
+        type="search"
+        data-test="search-input"
+        class="search-input"
+        placeholder="Search tasks…"
+        aria-label="Search tasks"
+      />
+      <button data-test="create-task-button" class="btn btn-primary">+ New task</button>
+    </div>
+  </header>
+
+  <main class="board" data-test="board">
+    <div class="toolbar" data-test="board-toolbar">
+      <span class="toolbar-counter" data-test="task-counter">0 tasks</span>
+      <span class="toolbar-loading" data-test="loading-indicator" hidden>Loading…</span>
+    </div>
+
+    <ul class="task-list" data-test="task-list" aria-live="polite"></ul>
+
+    <p class="empty-state" data-test="empty-state" hidden>
+      No tasks match your filters. Try a different search.
+    </p>
+  </main>
+
+  <aside class="drawer" data-test="task-drawer" hidden aria-hidden="true">
+    <form class="drawer-form" data-test="task-drawer-form" novalidate>
+      <header class="drawer-header">
+        <h2 class="drawer-title" data-test="drawer-title">New task</h2>
+        <button
+          type="button"
+          class="icon-btn"
+          data-test="drawer-close"
+          aria-label="Close drawer"
+        >&times;</button>
+      </header>
+
+      <label class="field">
+        <span class="field-label">Title</span>
+        <input
+          name="title"
+          type="text"
+          data-test="task-title-input"
+          maxlength="120"
+          required
+        />
+        <span class="field-error" data-test="task-title-error" hidden></span>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Description</span>
+        <textarea
+          name="description"
+          data-test="task-description-input"
+          maxlength="2000"
+          rows="4"
+        ></textarea>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Status</span>
+        <select name="status" data-test="task-status-select">
+          <option value="todo">To do</option>
+          <option value="in_progress">In progress</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+
+      <fieldset class="field">
+        <legend class="field-label">Tags</legend>
+        <div class="tag-picker" data-test="tags-picker"></div>
+      </fieldset>
+
+      <div class="drawer-actions">
+        <button
+          type="button"
+          class="btn btn-ghost"
+          data-test="drawer-cancel"
+        >Cancel</button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          data-test="drawer-save"
+        >Save</button>
+      </div>
+
+      <p class="drawer-error" data-test="drawer-error" hidden role="alert"></p>
+    </form>
+  </aside>
+
+  <div class="toast" data-test="toast" hidden role="status" aria-live="polite"></div>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>
