@@ -1,6 +1,8 @@
 <div align="center">
 
-# qa-automation-portfolio
+<img src="docs/img/banner.png" alt="qa-automation-portfolio — one SPA, two UI architectures, REST API suite" />
+
+<br/>
 
 **One application. Two UI test architectures. A REST API suite on top. Same Allure dashboard.**
 
