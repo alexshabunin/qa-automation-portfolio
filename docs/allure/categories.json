@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Product defects",
+    "matchedStatuses": ["failed"],
+    "messageRegex": ".*(AssertionError|expected|got).*"
+  },
+  {
+    "name": "Test defects",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*(TimeoutError|locator|playwright\\.).*"
+  },
+  {
+    "name": "Infrastructure flakes",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*(ConnectionError|ReadTimeout|503|server is busy).*"
+  },
+  {
+    "name": "Outdated tests",
+    "matchedStatuses": ["broken"],
+    "messageRegex": ".*Element not found.*"
+  }
+]
