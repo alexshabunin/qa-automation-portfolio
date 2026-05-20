@@ -6,7 +6,7 @@ The same SPA. Three test architectures. One Allure dashboard.
 
 [![ci](https://github.com/nightmarovvv/qa-automation-portfolio/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nightmarovvv/qa-automation-portfolio/actions/workflows/ci.yml)
 &nbsp;
-[![tests](https://img.shields.io/badge/tests-43%20passing-171717?style=flat-square&labelColor=171717)](#numbers)
+[![tests](https://img.shields.io/badge/tests-36%20passing-171717?style=flat-square&labelColor=171717)](#numbers)
 &nbsp;
 [![allure](https://img.shields.io/badge/allure-live-171717?style=flat-square&labelColor=171717)](https://nightmarovvv.github.io/qa-automation-portfolio/report/)
 &nbsp;
@@ -70,13 +70,13 @@ Five files, ~250 lines total, in this order:
 | isolation         | wipe store per test                        | mocks via `page.route()`                 | typed `MockedRoute` w/ strict counts              |
 | auth              | real JWT against `backend/`                | n/a (mocked)                             | n/a (mocked)                                      |
 
-**43 tests, ~17s wall time on the CI matrix, 0 flakes since the suite went green.** Hermetic — no external endpoints, no staging DB to wait on. If green here, green for real.
+**36 tests in the Allure dashboard, 7 more vedro scenarios passing in CI logs — 43 in total.** Wall time on the matrix sits around 17s because the three suites run in parallel; the sequential sum would be ~20s. Hermetic — no external endpoints, no staging DB to wait on.
 
 <a href="https://nightmarovvv.github.io/qa-automation-portfolio/report/">
   <img src="docs/img/allure-overview.png" width="900" alt="Allure overview — 36 tests, 100% pass" />
 </a>
 
-<sub>Allure shows 36 cases (25 api + 11 ui-pytest). The 7 ui-vedro scenarios run in the same CI matrix; vedro's allure reporter merge into the combined dashboard is the one piece of polish on the TODO.</sub>
+<sub>Why 36, not 43: vedro's allure-reporter ships per-scenario JSON differently from pytest's plugin, so the merge step needs a small adapter. Tracked, scheduled. Until then, the 7 vedro scenarios live in the CI matrix and the live log, not in the dashboard.</sub>
 
 <details>
 <summary><b>Graphs view — severity, status, duration</b></summary>
@@ -113,27 +113,41 @@ the exact number and URLs it saw.
 </div>
 
 ```python
-assert len(mock.requests) == 1, (
-    f"debounce should coalesce 5 keystrokes into 1 GET, "
-    f"got {len(mock.requests)}: {[r.url for r in mock.requests]}"
-)
+# scenarios/board/search_input_debounces_keystrokes.py
+async with mocked_tasks_list(self.page, body, wait_for_requests=1) as mock:
+    await self.board.header.search_input.type("alpha", delay_ms=40)
+    await self.board.task_list.get_list_task_by_id(matching_id).wait_for()
+# __aexit__ raises if the recorded count != 1.
+```
+
+The strict count check itself, ~12 lines from `mocks/mocked_route.py`:
+
+```python
+async def __aexit__(self, exc_type, exc, tb) -> None:
+    await self._page.unroute("**/*", self._handle)
+    if exc_type is not None or self._wait_for_requests is None:
+        return
+    actual = len(self._history)
+    if actual != self._wait_for_requests:
+        raise AssertionError(
+            f"Mock expected {self._wait_for_requests} {self._method} call(s), "
+            f"got {actual}. Recorded URLs: {[r.url for r in self._history]}"
+        )
 ```
 
 <details>
 <summary><b>What a mock-discipline failure actually looks like</b></summary>
 
-If the debounce ever broke on a feature branch, the failure would
-read:
+If the debounce broke on a feature branch:
 
 ```
-AssertionError: debounce should coalesce 5 keystrokes into 1 GET,
-got 3: ['…/api/tasks?q=a', '…/api/tasks?q=alp', '…/api/tasks?q=alpha']
+AssertionError: Mock expected 1 GET call(s), got 3.
+Recorded URLs: ['…/api/tasks?q=a', '…/api/tasks?q=alp', '…/api/tasks?q=alpha']
 ```
 
-That's a diagnosis. "test failed" is not. The cost is one f-string
-per assertion; the payback is every future debug session.
+A diagnosis, not a verdict. One f-string per mock, paid back on every future debug session.
 
-More in [TESTING.md §1](TESTING.md) and [ADR-002 — mocks count requests on exit](docs/adr/0002-mock-count-on-exit.md).
+→ [TESTING.md §1](TESTING.md) · [ADR-002](docs/adr/0002-mock-count-on-exit.md)
 
 </details>
 
@@ -308,35 +322,48 @@ Neither is "better." `ui-pytest` is what I'd reach for on a smaller
 team. `ui-vedro` earns its weight once contract-shaped pain shows up
 in fixtures.
 
+**What each stack gives up:**
+
+- `ui-pytest` — cheap to start, expensive to scale past ~300 tests. Mock helpers drift across files unless someone owns them; locators creep toward CSS the moment a component ships without `data-test`.
+- `ui-vedro` — every test is correct-by-construction, every test takes longer to write. A new QA needs a week before they ship a scenario without rewrites. The learning curve **is** the moat, both ways.
+
 → [ADR-001 — locators](docs/adr/0001-locators-data-test-only.md) · [ADR-003 — schemas cite source](docs/adr/0003-schemas-cite-source.md) · [ADR-004 — typed allure labels](docs/adr/0004-typed-allure-labels.md)
 
 ---
 
 ## stack — and why these choices
 
-| Layer            | Tool                          | Why this, not the obvious alternative                                                              |
-|------------------|-------------------------------|----------------------------------------------------------------------------------------------------|
-| Scenario runner  | **vedro** (Track B)            | async-native, BDD steps without Gherkin, contexts that guarantee state. Cucumber adds a second DSL for the same job. |
-| Test runner      | **pytest** (Track A + API)     | universal vocabulary, fixture scoping that matches the actual lifetimes in the suite.              |
-| Browser driver   | **Playwright**                 | trace-viewer makes flakes self-debugging; Selenium's launch overhead doesn't earn its keep here.   |
-| API contracts    | **d42**                        | typed schemas + `fake()` from the same definition. pydantic doesn't generate values; jsonschema doesn't type-check Python. |
-| Mock layer       | **`MockedRoute` over `page.route()`** | mountebank/WireMock would be more infra than this fixture SPA deserves; route() + a wrapper is the right amount. |
-| API client       | **`CustomRequester` + `ApiManager`** | facade keeps tests reading like business logic; raw `requests` calls in 80 tests is how you forget to assert status. |
-| Reporting        | **Allure**                     | feature/story/severity surfaces what matters; HTML-test-runner is a regression in 2026.            |
-| CI               | **GitHub Actions matrix**      | hermetic, one config, free for public repos. Buildkite would be overspend for a portfolio.         |
+Each row is paired with the alternative it replaces *and* the price of
+the pick — a stack isn't honest until you can name what it costs you.
+
+| Layer            | Pick                                  | Replaces                          | Price you pay                                                                 |
+|------------------|---------------------------------------|-----------------------------------|--------------------------------------------------------------------------------|
+| Scenario runner  | **vedro**                              | Cucumber / behave                 | Smaller community than pytest; new hires hit a learning curve.                |
+| Test runner      | **pytest**                             | unittest, nose                    | Plugins drift between versions; you pin pytest-xdist with care.               |
+| Browser driver   | **Playwright**                         | Selenium                          | Trace files grow fast; CI artifact storage adds up on long runs.              |
+| API contracts    | **d42**                                | pydantic + factory_boy            | Niche dependency; the next QA has to learn the `Schema % {...}` syntax.       |
+| Mock layer       | **`MockedRoute` over `page.route()`**  | mountebank / WireMock             | In-process — can't mock from a separate service if you split UI and backend.  |
+| API client       | **`CustomRequester` + `ApiManager`**   | raw `requests` calls per test     | One more layer of indirection between the test and the endpoint.              |
+| Reporting        | **Allure**                             | pytest-html, html-testRunner      | Heavier setup, Java required to generate the static site.                     |
+| CI               | **GitHub Actions matrix**              | Buildkite, Jenkins                | Free for public repos, but minutes are metered on private ones.               |
 
 ---
 
 ## deliberately not included
 
-What's missing here is on purpose:
+Three absences worth naming:
 
-- **No Selenium.** Browser-launch overhead doesn't earn its keep below ~1k tests, and Playwright's trace viewer eats Selenium's debugging story.
-- **No BDD Gherkin layer.** vedro's scenario class is already a readable DSL — adding Cucumber would be two DSLs solving one problem.
-- **No abstract Page Object factory.** Tests instantiate pages directly. The indirection adds a file lookup without removing any line.
-- **No retry-on-failure decorator.** A flaky test asserts the wrong thing. The fix lives in the assertion, not in the runner.
-- **No screenshot-on-failure heuristic.** Playwright's trace viewer captures more than a PNG ever could.
-- **No `time.sleep`.** Anywhere. Contexts wait for the *thing* the next step needs, not a clock. → [TESTING.md §5](TESTING.md).
+**No retry-on-failure decorator.** A flaky test is a test asserting on
+the wrong thing. The fix lives in the assertion, not in the runner.
+Hiding it under `@pytest.mark.flaky(reruns=3)` is how teams stop
+trusting their CI.
+
+**No BDD Gherkin layer.** `vedro`'s scenario class is already a
+readable DSL. Wedging Cucumber on top would be two DSLs solving one
+problem.
+
+**No `time.sleep`** — anywhere. Contexts wait for the thing the next
+step needs, not for a clock. → [TESTING.md §5](TESTING.md).
 
 ---
 
