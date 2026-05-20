@@ -81,6 +81,34 @@ jobs:
           # the Makefile boots the SPA, runs vedro, tears it down
           make test
 
+      - name: Inject allure environment + executor
+        if: always()
+        run: |
+          mkdir -p ${{ matrix.suite }}/allure-results
+          {
+            echo "Python=$(python --version 2>&1 | cut -d' ' -f2)"
+            echo "OS=Ubuntu 24.04 (ubuntu-latest)"
+            echo "Suite=${{ matrix.suite }}"
+            echo "CI.run=${{ github.run_number }}"
+            echo "CI.workflow=${{ github.workflow }}"
+            echo "Branch=${{ github.ref_name }}"
+            echo "Commit=${GITHUB_SHA:0:7}"
+            echo "Triggered.by=${{ github.actor }}"
+          } > ${{ matrix.suite }}/allure-results/environment.properties
+
+          cat > ${{ matrix.suite }}/allure-results/executor.json <<EOF
+          {
+            "name": "GitHub Actions",
+            "type": "github",
+            "url": "https://github.com/${{ github.repository }}",
+            "buildOrder": ${{ github.run_number }},
+            "buildName": "#${{ github.run_number }} · ${{ matrix.suite }}",
+            "buildUrl": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "reportName": "qa-automation-portfolio · ${{ matrix.suite }}",
+            "reportUrl": "https://nightmarovvv.github.io/qa-automation-portfolio/report/"
+          }
+          EOF
+
       - name: Upload allure-results
         if: always()
         continue-on-error: true  # Azure blob storage can be flaky; tests already passed
@@ -122,7 +150,7 @@ jobs:
           name: allure-results-ui-vedro
           path: allure-merged/ui-vedro
 
-      - name: Flatten results
+      - name: Flatten results + drop in categories
         run: |
           mkdir -p allure-results
           # prefix each result file with the suite name so test ids don't collide
@@ -133,6 +161,27 @@ jobs:
               done
             fi
           done
+          cp docs/allure/categories.json allure-results/categories.json
+
+      - name: Pull previous Allure history snapshot (for TREND block)
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          name: allure-history-snapshot
+          workflow: ci.yml
+          workflow_conclusion: success
+          branch: main
+          path: previous-history
+
+      - name: Restore history into allure-results
+        run: |
+          if [ -d previous-history/history ]; then
+            cp -r previous-history/history allure-results/history
+            echo "history restored from previous run"
+            ls allure-results/history | head -10
+          else
+            echo "no previous history yet — first build of trend chart"
+          fi
 
       - name: Install Allure CLI
         run: |
@@ -141,6 +190,14 @@ jobs:
 
       - name: Generate Allure report
         run: allure generate allure-results --clean -o allure-report
+
+      - name: Stash history for the next run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history-snapshot
+          path: allure-report/history
+          retention-days: 90
 
       - name: Assemble pages site (landing at /, allure at /report/)
         run: |
