@@ -83,6 +83,7 @@ jobs:
 
       - name: Upload allure-results
         if: always()
+        continue-on-error: true  # Azure blob storage can be flaky; tests already passed
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.suite }}
