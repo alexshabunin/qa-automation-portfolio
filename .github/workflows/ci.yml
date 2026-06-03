@@ -174,7 +174,7 @@ jobs:
           cp docs/allure/categories.json allure-results/categories.json
 
       - name: Pull previous Allure history snapshot (for TREND block)
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         continue-on-error: true
         with:
           name: allure-history-snapshot
