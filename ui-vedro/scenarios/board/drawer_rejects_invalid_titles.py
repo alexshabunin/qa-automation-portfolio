@@ -14,11 +14,10 @@ class Scenario(vedro.Scenario):
     # parametrized rows stay traceable on the report side.
     subject = "Drawer rejects invalid title input ({input_label})"
 
-    @vedro.params("empty",         "",          Translations.TitleRequired,      "B-401")
-    @vedro.params("whitespace",    "   ",       Translations.TitleRequired,      "B-402")
-    @vedro.params("too short",     "ab",        Translations.TitleTooShort,      "B-403")
-    @vedro.params("too long",      "a" * 121,   Translations.TitleTooLong,       "B-404")
-    @vedro.params("invalid chars", "ab@cd",     Translations.TitleInvalidChars,  "B-405")
+    @vedro.params("empty",         "",       Translations.TitleRequired,      "B-401")
+    @vedro.params("whitespace",    "   ",    Translations.TitleRequired,      "B-402")
+    @vedro.params("too short",     "ab",     Translations.TitleTooShort,      "B-403")
+    @vedro.params("invalid chars", "ab@cd",  Translations.TitleInvalidChars,  "B-404")
     def __init__(
         self,
         input_label: str,

@@ -57,15 +57,15 @@ new product before writing a line of automation:
 
 |                  | api                                | ui-pytest                  | ui-vedro                              |
 |------------------|------------------------------------|----------------------------|---------------------------------------|
-| tests / scenarios | **25**                            | **13**                     | **9 (one ×5)**                        |
+| tests / scenarios | **25**                            | **12**                     | **8 (one ×4)**                        |
 | runtime           | ~3s                                | ~12s                       | ~5s                                   |
 | stack             | pytest + requests + ApiManager     | pytest + Playwright + POM  | vedro + Playwright + d42 (Pydantic-style schemas) |
 | isolation         | wipe store per test                | mocks via `page.route()`   | typed `MockedRoute` w/ strict counts  |
 
-**47 tests, ~17s wall time on the CI matrix, 0 flakes since the suite went green.** Hermetic — no external endpoints, no staging DB to wait on. A daily scheduled run keeps the dashboard honest, so green never reads "last run 23 days ago."
+**45 tests, ~17s wall time on the CI matrix, 0 flakes since the suite went green.** Hermetic — no external endpoints, no staging DB to wait on. A daily scheduled run keeps the dashboard honest, so green never reads "last run 23 days ago."
 
 <a href="https://alexshabunin.github.io/qa-automation-portfolio/report/">
-  <img src="docs/img/allure-overview.png" width="900" alt="Allure overview — 47 tests, 100% pass" />
+  <img src="docs/img/allure-overview.png" width="900" alt="Allure overview — 45 tests, 100% pass" />
 </a>
 
 <sub>vedro scenarios go through <a href="ui-vedro/scripts/emit_allure_results.py">a small adapter</a> that walks the scenario files, pulls <code>@allure_labels</code> metadata, and emits the per-scenario JSON Allure expects. Runs only after a green vedro pass so the dashboard never claims green it didn't earn.</sub>

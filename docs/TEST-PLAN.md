@@ -138,11 +138,11 @@ explicit **shared** contract between QA and dev.
 | Phase | Status |
 |-------|--------|
 | API suite | Done — 25 tests |
-| ui-pytest suite | Done — 13 tests |
-| ui-vedro suite | Done — 9 scenarios (one ×5) |
+| ui-pytest suite | Done — 12 tests |
+| ui-vedro suite | Done — 8 scenarios (one ×4) |
 | CI matrix + Allure on Pages | Done |
 | Daily scheduled run | Done |
-| Close R-05 UI-side gap (title max/regex) | Done — `app.js` mirrors backend; vedro B-404/B-405 |
+| Close R-05 client char-validation gap | Done — `app.js` applies backend regex; vedro B-404 (ceiling already held by maxlength) |
 
 Full suite wall time: **~17 s** on the CI matrix (api ~3 s, ui-pytest ~12 s,
 ui-vedro ~5 s, run in parallel).

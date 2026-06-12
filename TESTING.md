@@ -120,4 +120,4 @@ real.
 ---
 
 These rules don't tell me how to write the next test; they're the
-reason the 47 already in the suite don't flake.
+reason the 45 already in the suite don't flake.

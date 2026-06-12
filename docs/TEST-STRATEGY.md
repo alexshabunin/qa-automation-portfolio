@@ -62,12 +62,14 @@ cannot ship; P2 = degrades the product; P3 = annoyance / edge.
   bug, so it gets a strict mock-count check, not a soft "it returned 200."
 - **R-05** was a confirmed drift, found while writing this strategy: the UI
   rejected only empty and `< 3` chars ([app/app.js](../app/app.js), `onSubmit`)
-  while the API enforced the full `TITLE_RE` regex and a 120-char ceiling
-  ([backend/main.py:26](../backend/main.py)) — so the UI would POST a 121-char
-  title the server rejects. **Now closed:** `app.js` mirrors the backend regex +
-  ceiling, covered on the client by ui-pytest `[too long / invalid chars]` and
-  vedro **B-404/B-405**, on the server by api `test_title_rejected`. The
-  `found → registered → fixed → tested` trail lives in [RTM.md](RTM.md).
+  while the API enforced the full `TITLE_RE` regex ([backend/main.py:26](../backend/main.py))
+  — so the form would POST a title with illegal characters that the server then
+  rejects. (The 120-char ceiling was *not* part of the gap: the input's
+  `maxlength="120"` already holds it — verified by test.) **Now closed:**
+  `app.js` applies the backend regex on submit, covered on the client by
+  ui-pytest `[invalid chars]` and vedro **B-404**, on the server by api
+  `test_title_rejected`. The `found → verified → fixed → tested` trail lives in
+  [RTM.md](RTM.md).
 - **R-06** is low-likelihood (auth is simple, HS256, one demo user) but
   high-impact, so it stays P1 — impact, not likelihood, sets the floor.
 - **R-09 / R-10** are *process* risks, not product bugs. They are first-class

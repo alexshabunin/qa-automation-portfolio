@@ -21,7 +21,7 @@ Last reconciled against the suite: 2026-06-12.
 | **BR-2** | User edits a task (fields, status, tags) | R-07 | P2 | vedro **B-201** · ui-pytest `test_drawer_hydrates_from_card`, `test_edit_tags_and_status` · api `test_patch_partial`, `test_patch_tags_dedup` | — |
 | **BR-3** | User searches without overloading the backend | R-03 | P1 | vedro **B-301** · ui-pytest `test_debounce_collapses_keystrokes` · api `test_q_filter` | — |
 | **BR-4** | Invalid data never reaches the store | R-04 | P2 | vedro **B-401/B-402/B-403** · ui-pytest `test_invalid_titles_are_rejected_client_side` · api `test_title_rejected`, `test_unknown_status`, `test_unknown_tag`, `test_patch_bad_status`, `test_list_bad_status_filter` | — |
-| **BR-4** | Title bounds (≤120) + char rules enforced on BOTH sides | R-05 | P2 | api `test_title_rejected` (server) · ui-pytest `test_invalid_titles_are_rejected_client_side[too long / invalid chars]` · vedro **B-404/B-405** (client) | GAP-01 *(fixed)* |
+| **BR-4** | Title character rules enforced on the client too, not only the API | R-05 | P2 | api `test_title_rejected` (server) · ui-pytest `test_invalid_titles_are_rejected_client_side[invalid chars]` · vedro **B-404** (client) | GAP-01 *(fixed)* |
 | **BR-5** | A save failure never loses user input | R-02 | P1 | vedro **B-501** · ui-pytest `test_500_keeps_drawer_open` | — |
 | **BR-6** | Only authenticated requests reach task data | R-06 | P1 | api `test_login_returns_token`, `test_login_wrong_password`, `test_login_unknown_email`, `test_tasks_require_auth`, `test_tasks_bad_token` | — |
 | **BR-7** | Task list reflects the current store | R-08 | P3 | api `test_empty`, `test_pagination`, `test_status_filter`, `test_tag_filter`, `test_delete_task`, `test_get_missing_returns_404` · ui-pytest `test_empty_state` | — |
@@ -45,11 +45,14 @@ owner is project management; a gap nobody wrote down is a future incident.
 
 | Gap | Description | Risk | Severity | Status |
 |-----|-------------|------|:--------:|--------|
-| **GAP-01** | UI client-side validation was weaker than the API — `onSubmit` ([app/app.js](../app/app.js)) rejected only empty / `<3` chars and would POST a 121-char or regex-invalid title that the API ([backend/main.py:26](../backend/main.py)) then rejected. | R-05 | Medium | **Fixed** — `app.js` now mirrors the backend `TITLE_RE` + 120-char ceiling; covered by ui-pytest `[too long / invalid chars]` and vedro **B-404/B-405**. |
+| **GAP-01** | Client title validation was weaker than the API — `onSubmit` ([app/app.js](../app/app.js)) rejected only empty / `<3` chars, so a title with illegal characters (e.g. `ab@cd`) would POST and get rejected only server-side by `TITLE_RE` ([backend/main.py:26](../backend/main.py)). | R-05 | Medium | **Fixed** — `app.js` now applies the backend regex on submit; covered by ui-pytest `[invalid chars]` and vedro **B-404**. |
 
-Found while writing the strategy, fixed in the same pass: client and server now
-reject the same inputs. The `found → registered → fixed → tested` trail is the
-point — the matrix didn't just describe coverage, it drove a real fix.
+The 120-char ceiling turned out to already be enforced by the input's
+`maxlength="120"` — verified by test, so that half was never a real gap. The
+genuine drift was *character* validation, now closed. Found while writing the
+strategy, fixed and tested in the same pass: the `found → verified → fixed →
+tested` trail is the point — the matrix drove a real fix and corrected a wrong
+assumption along the way.
 
 ## 4. Process-risk mitigations (no test case — a policy)
 
@@ -69,7 +72,7 @@ no P1 requirement exists without a test:
 | Suite | Tests | Maps to |
 |-------|:-----:|---------|
 | `api/` | 25 | BR-1, BR-2, BR-3, BR-4, BR-6, BR-7 |
-| `ui-pytest/` | 13 | BR-1, BR-2, BR-3, BR-4, BR-5, BR-7 |
-| `ui-vedro/` | 9 | BR-1, BR-2, BR-3, BR-4, BR-5 |
+| `ui-pytest/` | 12 | BR-1, BR-2, BR-3, BR-4, BR-5, BR-7 |
+| `ui-vedro/` | 8 | BR-1, BR-2, BR-3, BR-4, BR-5 |
 
 No orphan tests. No uncovered P1 requirement. No open gaps (GAP-01 fixed).

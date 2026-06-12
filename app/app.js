@@ -199,11 +199,9 @@ async function onSubmit(event) {
     els.titleInput.focus();
     return;
   }
-  if (title.length > 120) {
-    showFieldError(els.titleError, "Title must be at most 120 characters.");
-    els.titleInput.focus();
-    return;
-  }
+  // The 120-char ceiling is held by the input's maxlength="120" (see
+  // index.html); this regex mirrors the backend's character rules so the form
+  // can't POST a title with illegal characters that the API would reject.
   if (!TITLE_RE.test(title)) {
     showFieldError(els.titleError, "Title has invalid characters.");
     els.titleInput.focus();

@@ -9,7 +9,6 @@ class Translations:
     SaveButtonBusy = "Saving…"
     TitleRequired = "Title is required."
     TitleTooShort = "Title must be at least 3 characters."
-    TitleTooLong = "Title must be at most 120 characters."
     TitleInvalidChars = "Title has invalid characters."
     ToastCreated = "Task created"
     ToastUpdated = "Task updated"
