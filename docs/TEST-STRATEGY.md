@@ -60,12 +60,14 @@ cannot ship; P2 = degrades the product; P3 = annoyance / edge.
   and both UI suites assert that 5 keystrokes coalesce into **exactly one**
   backend call — counted, not assumed. A regression here is a real money/latency
   bug, so it gets a strict mock-count check, not a soft "it returned 200."
-- **R-05** is a confirmed drift, found while writing this strategy. The UI
-  rejects only empty and `< 3` chars ([app/app.js:184](../app/app.js),
-  `onSubmit`), but the API enforces the full `TITLE_RE` regex and a 120-char
-  ceiling ([backend/main.py:26](../backend/main.py)). The UI will happily POST a
-  121-char title the server rejects. Today the API suite covers the server side;
-  the UI-side gap is **tracked, not yet closed** — see [RTM.md](RTM.md) gap row.
+- **R-05** was a confirmed drift, found while writing this strategy: the UI
+  rejected only empty and `< 3` chars ([app/app.js](../app/app.js), `onSubmit`)
+  while the API enforced the full `TITLE_RE` regex and a 120-char ceiling
+  ([backend/main.py:26](../backend/main.py)) — so the UI would POST a 121-char
+  title the server rejects. **Now closed:** `app.js` mirrors the backend regex +
+  ceiling, covered on the client by ui-pytest `[too long / invalid chars]` and
+  vedro **B-404/B-405**, on the server by api `test_title_rejected`. The
+  `found → registered → fixed → tested` trail lives in [RTM.md](RTM.md).
 - **R-06** is low-likelihood (auth is simple, HS256, one demo user) but
   high-impact, so it stays P1 — impact, not likelihood, sets the floor.
 - **R-09 / R-10** are *process* risks, not product bugs. They are first-class

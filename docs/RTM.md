@@ -9,7 +9,7 @@ The chain the strategy promises, made auditable:
 - **Rule:** every **P1** risk is covered **100%**. P2 covered at ≥1 level.
   Gaps are registered explicitly (§3), never left implicit.
 
-Last reconciled against the suite: 2026-05-20.
+Last reconciled against the suite: 2026-06-12.
 
 ---
 
@@ -21,7 +21,7 @@ Last reconciled against the suite: 2026-05-20.
 | **BR-2** | User edits a task (fields, status, tags) | R-07 | P2 | vedro **B-201** · ui-pytest `test_drawer_hydrates_from_card`, `test_edit_tags_and_status` · api `test_patch_partial`, `test_patch_tags_dedup` | — |
 | **BR-3** | User searches without overloading the backend | R-03 | P1 | vedro **B-301** · ui-pytest `test_debounce_collapses_keystrokes` · api `test_q_filter` | — |
 | **BR-4** | Invalid data never reaches the store | R-04 | P2 | vedro **B-401/B-402/B-403** · ui-pytest `test_invalid_titles_are_rejected_client_side` · api `test_title_rejected`, `test_unknown_status`, `test_unknown_tag`, `test_patch_bad_status`, `test_list_bad_status_filter` | — |
-| **BR-4** | (server) title bounds 3..120 + regex enforced | R-05 | P2 | api `test_title_rejected` (server side) | **GAP-01** |
+| **BR-4** | Title bounds (≤120) + char rules enforced on BOTH sides | R-05 | P2 | api `test_title_rejected` (server) · ui-pytest `test_invalid_titles_are_rejected_client_side[too long / invalid chars]` · vedro **B-404/B-405** (client) | GAP-01 *(fixed)* |
 | **BR-5** | A save failure never loses user input | R-02 | P1 | vedro **B-501** · ui-pytest `test_500_keeps_drawer_open` | — |
 | **BR-6** | Only authenticated requests reach task data | R-06 | P1 | api `test_login_returns_token`, `test_login_wrong_password`, `test_login_unknown_email`, `test_tasks_require_auth`, `test_tasks_bad_token` | — |
 | **BR-7** | Task list reflects the current store | R-08 | P3 | api `test_empty`, `test_pagination`, `test_status_filter`, `test_tag_filter`, `test_delete_task`, `test_get_missing_returns_404` · ui-pytest `test_empty_state` | — |
@@ -40,14 +40,16 @@ Last reconciled against the suite: 2026-05-20.
 
 ## 3. Gap register
 
-Open coverage gaps, tracked instead of hidden:
+No open coverage gaps. History kept for the record — a gap with an ID and an
+owner is project management; a gap nobody wrote down is a future incident.
 
 | Gap | Description | Risk | Severity | Status |
 |-----|-------------|------|:--------:|--------|
-| **GAP-01** | UI client-side validation is weaker than the API. `onSubmit` ([app/app.js](../app/app.js)) rejects only empty / `<3` chars; it does **not** enforce the 120-char ceiling or `TITLE_RE` that the API applies ([backend/main.py:26](../backend/main.py)). A 121-char or regex-invalid title is POSTed and rejected only server-side. Server side is tested; **UI side is not yet**. | R-05 | Medium | Open — backlog (TEST-PLAN §10) |
+| **GAP-01** | UI client-side validation was weaker than the API — `onSubmit` ([app/app.js](../app/app.js)) rejected only empty / `<3` chars and would POST a 121-char or regex-invalid title that the API ([backend/main.py:26](../backend/main.py)) then rejected. | R-05 | Medium | **Fixed** — `app.js` now mirrors the backend `TITLE_RE` + 120-char ceiling; covered by ui-pytest `[too long / invalid chars]` and vedro **B-404/B-405**. |
 
-A gap with an ID and an owner is project management; a gap nobody wrote down is
-a future incident. GAP-01 is the honest one this SUT actually has.
+Found while writing the strategy, fixed in the same pass: client and server now
+reject the same inputs. The `found → registered → fixed → tested` trail is the
+point — the matrix didn't just describe coverage, it drove a real fix.
 
 ## 4. Process-risk mitigations (no test case — a policy)
 
@@ -67,7 +69,7 @@ no P1 requirement exists without a test:
 | Suite | Tests | Maps to |
 |-------|:-----:|---------|
 | `api/` | 25 | BR-1, BR-2, BR-3, BR-4, BR-6, BR-7 |
-| `ui-pytest/` | 11 | BR-1, BR-2, BR-3, BR-4, BR-5, BR-7 |
-| `ui-vedro/` | 7 | BR-1, BR-2, BR-3, BR-4, BR-5 |
+| `ui-pytest/` | 13 | BR-1, BR-2, BR-3, BR-4, BR-5, BR-7 |
+| `ui-vedro/` | 9 | BR-1, BR-2, BR-3, BR-4, BR-5 |
 
-No orphan tests. No uncovered P1 requirement. One registered gap (GAP-01).
+No orphan tests. No uncovered P1 requirement. No open gaps (GAP-01 fixed).

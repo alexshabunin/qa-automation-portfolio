@@ -16,6 +16,8 @@ class TestDrawerValidation:
             ("", "Title is required."),
             ("   ", "Title is required."),
             ("ab", "Title must be at least 3 characters."),
+            ("a" * 121, "Title must be at most 120 characters."),
+            ("ab@cd", "Title has invalid characters."),
         ],
     )
     @allure.title("Drawer rejects invalid title: '{title}'")

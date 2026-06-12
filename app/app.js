@@ -10,6 +10,10 @@
 const API = "/api/tasks";
 const SEARCH_DEBOUNCE_MS = 300;
 const TAGS = ["frontend", "backend", "infra", "bug", "research"];
+// Mirror of the backend's TITLE_RE (see backend/main.py). Keeping the client
+// in lockstep with the server closes the gap where the form would POST a title
+// the API rejects (too long / illegal characters).
+const TITLE_RE = /^[A-Za-z0-9][A-Za-z0-9 _-]{2,118}[A-Za-z0-9]$/;
 
 const $ = (selector, root = document) => root.querySelector(selector);
 
@@ -192,6 +196,16 @@ async function onSubmit(event) {
   }
   if (title.length < 3) {
     showFieldError(els.titleError, "Title must be at least 3 characters.");
+    els.titleInput.focus();
+    return;
+  }
+  if (title.length > 120) {
+    showFieldError(els.titleError, "Title must be at most 120 characters.");
+    els.titleInput.focus();
+    return;
+  }
+  if (!TITLE_RE.test(title)) {
+    showFieldError(els.titleError, "Title has invalid characters.");
     els.titleInput.focus();
     return;
   }
