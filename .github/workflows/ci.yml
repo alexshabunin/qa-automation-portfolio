@@ -31,10 +31,10 @@ jobs:
         suite: [api, ui-pytest, ui-vedro]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -117,7 +117,7 @@ jobs:
       - name: Upload allure-results
         if: always()
         continue-on-error: true  # Azure blob storage can be flaky; tests already passed
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: allure-results-${{ matrix.suite }}
           path: |
@@ -132,24 +132,24 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download api results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: allure-results-api
           path: allure-merged/api
 
       - name: Download ui-pytest results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: allure-results-ui-pytest
           path: allure-merged/ui-pytest
 
       - name: Download ui-vedro results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: allure-results-ui-vedro
@@ -179,7 +179,7 @@ jobs:
           cp docs/allure/categories.json allure-results/categories.json
 
       - name: Pull previous Allure history snapshot (for TREND block)
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         continue-on-error: true
         with:
           name: allure-history-snapshot
@@ -208,7 +208,7 @@ jobs:
 
       - name: Stash history for the next run
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: allure-history-snapshot
           path: allure-report/history
@@ -233,10 +233,10 @@ jobs:
           cp -r allure-report/* site/report/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
       - name: Deploy to Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
