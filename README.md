@@ -14,7 +14,7 @@ The same SPA. Three test architectures. One Allure dashboard.
 
 <br/>
 
-[**Landing**](https://alexshabunin.github.io/qa-automation-portfolio/) · [**Live Allure**](https://alexshabunin.github.io/qa-automation-portfolio/report/) · [Tradeoffs](#tradeoffs)
+[**Landing**](https://alexshabunin.github.io/qa-automation-portfolio/) · [**Live Allure**](https://alexshabunin.github.io/qa-automation-portfolio/report/) · [Same test, two ways](#same-test-two-stacks) · [Tradeoffs](#tradeoffs)
 
 <br/>
 
@@ -24,25 +24,34 @@ The same SPA. Three test architectures. One Allure dashboard.
 
 <br/>
 
-The interesting part of this repo isn't the SPA. It's that the three
-suites around it differ where it matters and agree where it should.
-A `pytest` + Playwright + POM suite for the 80% of teams. A `vedro` +
-`d42` + Webbricks-style suite for the 20% that grow into a thousand
-tests. A REST API suite hitting a real FastAPI service with real JWT.
+The interesting part of this repo isn't the SPA — it's everything around
+it. Three suites that **differ where it matters and agree where they
+should**, and the QA-lead paperwork that says *why* each test exists, not
+just that it passes. A `pytest` + Playwright + POM suite for the 80% of
+teams. A `vedro` + `d42` + Webbricks-style suite for the 20% that grow into
+a thousand tests. A REST API suite hitting a real FastAPI service with real
+JWT.
 
-## quick look
+## what's in the repo
 
-Open the [live Allure report](https://alexshabunin.github.io/qa-automation-portfolio/report/),
-then the [side-by-side example](#same-test-two-stacks), then the
-[tradeoffs](#tradeoffs) table.
+**The planning layer** — process artifacts, each wired to the actual tests
+(by AllureID), not written in a vacuum. This is how I'd approach testing a
+new product before writing a line of automation:
 
-## the five files I'd point at
+| Document | What it is |
+|----------|------------|
+| [**Test Strategy**](docs/TEST-STRATEGY.md) | Risk-storming of TaskFlow, business-value ranking, P1/P2/P3 coverage priority. |
+| [**Test Plan**](docs/TEST-PLAN.md) | ISO/IEC/IEEE 29119-3 structure — scope, approach, environment, entry/exit, schedule — plus DORA delivery metrics. |
+| [**RTM**](docs/RTM.md) | Traceability `requirement → risk → test → defect`. P1 risks covered 100%; the one real gap is registered, not hidden. |
+| [**ADRs**](docs/adr/) | Six dated decisions arguing each engineering rule the suites follow. |
+
+**The code worth opening**
 
 1. [`ui-vedro/mocks/mocked_route.py`](ui-vedro/mocks/mocked_route.py) — typed `MockedRoute` with `.history` and a count check on `__aexit__`.
 2. [`ui-vedro/schemas/__init__.py`](ui-vedro/schemas/__init__.py) — every constraint cites its source.
 3. [`api/conftest.py`](api/conftest.py) — fixture chain, scopes annotated.
 4. [`api/custom_requester/custom_requester.py`](api/custom_requester/custom_requester.py) — base class for every API client.
-5. [`TESTING.md`](TESTING.md) — the rules; [`docs/adr/`](docs/adr/) argues each one.
+5. [`TESTING.md`](TESTING.md) — the rules in one line each; [`docs/adr/`](docs/adr/) argues them.
 
 ## numbers
 
@@ -50,10 +59,10 @@ then the [side-by-side example](#same-test-two-stacks), then the
 |------------------|------------------------------------|----------------------------|---------------------------------------|
 | tests / scenarios | **25**                            | **11**                     | **7 (one ×3)**                        |
 | runtime           | ~3s                                | ~12s                       | ~5s                                   |
-| stack             | pytest + requests + ApiManager     | pytest + Playwright + POM  | vedro + Playwright + d42              |
+| stack             | pytest + requests + ApiManager     | pytest + Playwright + POM  | vedro + Playwright + d42 (Pydantic-style schemas) |
 | isolation         | wipe store per test                | mocks via `page.route()`   | typed `MockedRoute` w/ strict counts  |
 
-**43 tests, ~17s wall time on the CI matrix, 0 flakes since the suite went green.** Hermetic — no external endpoints, no staging DB to wait on.
+**43 tests, ~17s wall time on the CI matrix, 0 flakes since the suite went green.** Hermetic — no external endpoints, no staging DB to wait on. A daily scheduled run keeps the dashboard honest, so green never reads "last run 23 days ago."
 
 <a href="https://alexshabunin.github.io/qa-automation-portfolio/report/">
   <img src="docs/img/allure-overview.png" width="900" alt="Allure overview — 43 tests, 100% pass" />
@@ -187,22 +196,8 @@ flowchart LR
     CI -->|combined results| AL
 ```
 
-## api fixture chain
-
-```mermaid
-flowchart TB
-    A["http_session<br/><i>scope=session</i><br/>requests.Session(), default headers"]
-    B["auth_token<br/><i>scope=session</i><br/>POST /v1/auth/login → JWT (once per run)"]
-    C["auth_session<br/><i>scope=session</i><br/>http_session + Authorization: Bearer ..."]
-    D["api_manager<br/><i>scope=class</i><br/>ApiManager(auth_session) — facade over AuthAPI, TasksAPI"]
-    E["clean_tasks<br/><i>scope=function</i><br/>DELETE /v1/tasks before each test that asks"]
-    A --> B --> C --> D --> E
-```
-
-`auth_token` is session-scope because POST /login is ~200 ms; 100 tests
-at function-scope would burn 20 seconds doing nothing useful.
-`clean_tasks` is per-function because state isolation between tests is
-non-negotiable. → [ADR-005](docs/adr/0005-fixture-scopes-picked.md).
+The API fixture chain — and the one-line reason behind every scope choice —
+lives in [`api/README.md`](api/README.md#fixture-chain). → [ADR-005](docs/adr/0005-fixture-scopes-picked.md).
 
 ---
 

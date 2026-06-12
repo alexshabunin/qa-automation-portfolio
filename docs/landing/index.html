@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>qa-automation-portfolio — Alex Shabunin</title>
-<meta name="description" content="Test automation portfolio — one SPA, two UI architectures (pytest+POM and vedro+d42), plus REST API tests via ApiManager.">
+<meta name="description" content="QA automation portfolio — one SPA, three test architectures (pytest+POM, vedro+d42, REST API/JWT), plus QA-lead planning: test strategy, ISO 29119-3 plan, and a requirement→risk→test→defect traceability matrix.">
 <meta property="og:title" content="qa-automation-portfolio">
-<meta property="og:description" content="One SPA. Two UI architectures. + REST API suite.">
+<meta property="og:description" content="Three test architectures on one SPA + the QA-lead paperwork: strategy, ISO 29119-3 plan, RTM.">
 <meta property="og:image" content="https://raw.githubusercontent.com/alexshabunin/qa-automation-portfolio/main/docs/img/social-preview.png">
 <meta property="og:url" content="https://alexshabunin.github.io/qa-automation-portfolio/">
 <meta name="twitter:card" content="summary_large_image">
@@ -605,6 +605,38 @@ footer .links { display: flex; gap: 2rem; }
   <a class="bigshot reveal" href="./report/">
     <img src="../img/allure-overview.png" alt="Allure dashboard — 43 tests, 100% pass" />
   </a>
+</section>
+
+<!-- PLANNING LAYER -->
+<section>
+  <div class="section-num reveal">06 / Before the first test</div>
+  <h2 class="section-title reveal">Not just suites — the QA-lead paperwork behind them.</h2>
+  <div class="three-up">
+    <div class="stack-card reveal">
+      <span class="badge">Strategy</span>
+      <h3>Test Strategy</h3>
+      <p>Risk-storming of the product, ranked by business value, with P1/P2/P3
+      coverage priority. The answer to "how would you approach testing a new
+      project?" — written down, not improvised.</p>
+      <div class="meta"><span>risk-storming</span><a href="https://github.com/alexshabunin/qa-automation-portfolio/blob/main/docs/TEST-STRATEGY.md">read →</a></div>
+    </div>
+    <div class="stack-card reveal">
+      <span class="badge">Plan</span>
+      <h3>Test Plan</h3>
+      <p>Structured to ISO/IEC/IEEE 29119-3 — scope, approach, environment,
+      entry/exit criteria, schedule — plus DORA delivery metrics tying the
+      suite to deployment health.</p>
+      <div class="meta"><span>ISO 29119-3 · DORA</span><a href="https://github.com/alexshabunin/qa-automation-portfolio/blob/main/docs/TEST-PLAN.md">read →</a></div>
+    </div>
+    <div class="stack-card reveal">
+      <span class="badge">RTM</span>
+      <h3>Traceability Matrix</h3>
+      <p>Every requirement traced <code>requirement → risk → test → defect</code>
+      by AllureID. P1 risks covered 100%; the one real coverage gap is
+      registered, not hidden.</p>
+      <div class="meta"><span>P1 covered 100%</span><a href="https://github.com/alexshabunin/qa-automation-portfolio/blob/main/docs/RTM.md">read →</a></div>
+    </div>
+  </div>
 </section>
 
 <!-- QUOTE -->

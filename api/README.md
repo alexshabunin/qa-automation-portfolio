@@ -11,7 +11,7 @@ uvicorn --app-dir ../backend main:app --port 8000
 pytest -v
 ```
 
-22 tests across auth, CRUD, filters, validation. Single hermetic backend,
+25 tests across auth, CRUD, filters, validation. Single hermetic backend,
 JWT auth, in-memory store wiped between tests.
 
 ## architecture
@@ -52,20 +52,14 @@ api/
 
 ## fixture chain
 
-```
-http_session  (session)   requests.Session() + default headers
-       │
-       ▼
-auth_token    (session)   POST /v1/auth/login once per run
-       │
-       ▼
-auth_session  (session)   http_session + Authorization: Bearer <jwt>
-       │
-       ▼
-api_manager   (class)     ApiManager(auth_session, BASE_URL)
-       │
-       ▼
-clean_tasks   (function)  wipes the store before each test that asks for it
+```mermaid
+flowchart TB
+    A["http_session<br/><i>scope=session</i><br/>requests.Session(), default headers"]
+    B["auth_token<br/><i>scope=session</i><br/>POST /v1/auth/login → JWT (once per run)"]
+    C["auth_session<br/><i>scope=session</i><br/>http_session + Authorization: Bearer ..."]
+    D["api_manager<br/><i>scope=class</i><br/>ApiManager(auth_session, BASE_URL)"]
+    E["clean_tasks<br/><i>scope=function</i><br/>DELETE /v1/tasks before each test that asks"]
+    A --> B --> C --> D --> E
 ```
 
 Picking the scope is the whole game. `auth_token` is `scope="session"`

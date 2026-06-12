@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # 06:00 UTC every day — keeps the Allure dashboard "fresh" so it
+    # never reads "last run 23 days ago". GitHub disables scheduled
+    # workflows after 60 days of repo inactivity; a single commit resets it.
+    - cron: "0 6 * * *"
 
 permissions:
   contents: read
@@ -121,7 +126,7 @@ jobs:
 
   publish-report:
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
