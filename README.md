@@ -268,6 +268,6 @@ cd ui-vedro   && make test
 
 <div align="center"><sub>
 
-[alexshabunin.com](https://alexshabunin.com) · [@waytoalex](https://t.me/waytoalex) · shanaleks0007@gmail.com · MIT
+[alexshabunin.com](https://alexshabunin.com) · [@waytoalex](https://t.me/waytoalex) · MIT
 
 </sub></div>
